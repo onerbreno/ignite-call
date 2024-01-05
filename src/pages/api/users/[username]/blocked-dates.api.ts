@@ -42,11 +42,6 @@ export default async function handle(
     )
   })
 
-  const teste = await prisma.$queryRaw`
-    SELECT S.date AS date
-    FROM schedulings S
-  `
-
   const blockedDatesRaw: Array<{ date: number }> = await prisma.$queryRaw`
     SELECT 
       EXTRACT(DAY FROM S.date) AS date,
