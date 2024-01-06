@@ -14,7 +14,7 @@ import {
 
 interface Availability {
   possibleTimes: number[]
-  availableTimes: number[]
+  blockedTimes: { date: string }[]
 }
 
 interface CalendarStepProps {
@@ -54,6 +54,20 @@ export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
     enabled: !!selectedDate,
   })
 
+  const { possibleTimes, blockedTimes } = availability || {}
+
+  const availableTimes = possibleTimes?.filter((time) => {
+    const isTimeBlocked = blockedTimes?.some(
+      (blockedTime) => dayjs(blockedTime.date).hour() === time,
+    )
+
+    const isTimeInPast = selectedDate
+      ? dayjs(selectedDate).set('hour', time).isBefore(new Date())
+      : null
+
+    return !isTimeBlocked && !isTimeInPast
+  })
+
   function handleSelectTime(hour: number) {
     const dateWithTime = dayjs(selectedDate)
       .set('hour', hour)
@@ -74,12 +88,12 @@ export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
           </TimePickerHeader>
 
           <TimePickerList>
-            {availability?.possibleTimes.map((hour) => {
+            {possibleTimes?.map((hour) => {
               return (
                 <TimePickerItem
                   key={hour}
                   onClick={() => handleSelectTime(hour)}
-                  disabled={!availability.availableTimes.includes(hour)}
+                  disabled={!availableTimes?.includes(hour)}
                 >
                   {String(hour).padStart(2, '0')}:00h
                 </TimePickerItem>
